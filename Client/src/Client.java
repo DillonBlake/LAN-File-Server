@@ -17,16 +17,11 @@ import javax.swing.JOptionPane;
 
 public class Client{
     
-    //ports
     public static final int SENDPORT = 5000;
     public static final int GETPORT = 5001;
     
-    public static String mainDir;
-    public static String utilitiesDir;
-    public static String keyDir;
-    public static String tempDir;
-    public static int mainPort, portIn, portOut;
-    public static String ip;
+    public static String mainDir, utilitiesDir, keyDir, tempDir, ip;
+    public static int portIn, portOut;
     
     private static ClientTwoWay twoWay;
     private static byte[] salt = null;
@@ -36,7 +31,7 @@ public class Client{
 		//setup directories
 		changeDirectory();
 		
-		//open listener
+		//open listener on the GETPORT
 		Listener listen = new Listener(GETPORT);
 		
 		//open main socket
@@ -44,8 +39,10 @@ public class Client{
 		try {
 			//send ip
 			InetAddress localHost = InetAddress.getLocalHost();
-			send(ip.getBytes());
-			System.out.println("sent ip");
+			boolean continueSend = true;
+			while(continueSend)
+				continueSend = !send(localHost.getHostAddress().getBytes());
+			
 			//wait for response
 			int length = 0;
 			ArrayList<byte[]> listIn = null;
@@ -55,13 +52,16 @@ public class Client{
 				Delay d = new Delay();
 				while(!d.delay());
 			}//end while listen
+			
+			//parse the response
 			salt = listIn.get(0);
 			String ports = new String(listIn.get(1));
 			System.out.println("got ports");
 			portOut = Integer.parseInt(ports.split("-")[0]);
 			portIn = Integer.parseInt(ports.split("-")[1]);
+			
+			//make a ClientTwoWay
 			twoWay = new ClientTwoWay(portIn, portOut, ip);
-			System.out.println("two way created");
 		}catch(Exception e){
 			//close if socket can't be connected
 			JOptionPane.showMessageDialog(null, "Connection Failed");
@@ -73,8 +73,9 @@ public class Client{
 	/*
 	 * Sends a byte message to connection ip on out
 	 * @param byte[] msg: The message to be sent in bytes
+	 * @return boolean sent: true if sent successfully, false if failed
 	 */
-	private static void send(byte[] msg) {
+	private static boolean send(byte[] msg) {
 		try {
 			Socket socket = new Socket(ip, SENDPORT);
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -82,11 +83,15 @@ public class Client{
 			out.write(msg);
 			out.close();
 			socket.close();
+			Delay d = new Delay();
+			while(!d.delay());
+			return true;
 		}catch(Exception e) {
 			//close program
 			JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
 			Client.getTwoWay().disconnect();
 			System.exit(0);
+			return false;
 		}//end try
 	}//end sendToServer
 	
@@ -109,7 +114,7 @@ public class Client{
 	/*
 	 * Change server folder directly with a file chooser
 	 */
-	public static void changeDirectory() {
+	private static void changeDirectory() {
 		//file chooser
 		try {
 			EventQueue.invokeAndWait(new Runnable() {
