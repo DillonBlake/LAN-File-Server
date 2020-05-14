@@ -1,16 +1,20 @@
-import java.io.DataInputStream;
+/*
+ * This is the two way connection with the server.
+ * There are two ports to talk to the server. First, the login is handled. 
+ * Passwords are sent to the server using the MD5 hash algorithm.
+ * A password based key is also created for encryption later on.
+ * After login, this class then sends requests to the server to sync or pull.
+ */
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -18,10 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-public class ClientTwoWay extends Thread{
-	
-	private final int OK = 200;
-	private final int ERROR = 404;
+public class ClientTwoWay {
 	
 	private int portIn, portOut;
 	private String ip, username;
@@ -29,9 +30,15 @@ public class ClientTwoWay extends Thread{
 	private byte[] salt;
 	private Listener listen;
 	private Console console;
-	private MemoryThread mem;
+	private Delay delay;
 	
-	public ClientTwoWay(int i, int o, String addr) throws UnknownHostException {
+	/*
+	 * This is the constructor to setup the two way. It starts the login
+	 * @param int i: the in port
+	 * @param int o: the out port
+	 * @param String addr: the ip to send to
+	 */
+	public ClientTwoWay(int i, int o, String addr) {
 		portIn = i;
 		portOut = o;
 		ip = addr;
@@ -39,21 +46,18 @@ public class ClientTwoWay extends Thread{
 		console = new Console();
 		console.setVisible(false);
 		console.update("Connected to server at: " + ip);
-		//mem = new MemoryThread();
-		start();
+		listen = new Listener(portIn);
+		delay = new Delay();
+		
+		//get user info
+		Login login = new Login();
 	}//end constructor
 	
 	/*
-	 * This method is called when the thread is started
+	 * This method logs into the server with a username and password
+	 * @param String u: the username
+	 * @param Srting p: the password
 	 */
-	public void run() {
-		//get user info
-		Login login = new Login();
-		
-		listen = new Listener(portIn);
-		
-	}//end run
-	
 	public void login(String u, String p) {
 		console.setVisible(true);
 		username = u;
@@ -89,11 +93,7 @@ public class ClientTwoWay extends Thread{
 		while(length != 1) {
 			listIn = listen.getMessages();
 			length = listIn.size();
-			try {
-				sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}//end catch
+			while(!delay.delay());
 		}//end loop
 				
 		//proccess password response
@@ -120,7 +120,7 @@ public class ClientTwoWay extends Thread{
 			out.write(msg);
 			out.close();
 			socket.close();
-			sleep(50);
+			while(!delay.delay());
 			return true;
 		}catch(Exception e) {
 			//close program
@@ -140,7 +140,7 @@ public class ClientTwoWay extends Thread{
 	public void sync() throws NoSuchAlgorithmException {
 		console.update("Syncing...");
 		
-		//get list of files
+		//get list of files, but filter
 		File syncFolder = new File(Client.mainDir);
 		File[] files = syncFolder.listFiles(new FilenameFilter() {
 	        @Override
@@ -168,11 +168,7 @@ public class ClientTwoWay extends Thread{
 		while(length != 1) {
 			listIn = listen.getMessages();
 			length = listIn.size();
-			try {
-				sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}//end catch
+			while(!delay.delay());
 		}//end listen loop
 		String[] ports = new String(listIn.get(0)).split("-");
 		
@@ -225,7 +221,9 @@ public class ClientTwoWay extends Thread{
 		System.out.println(folder.getAbsolutePath());
 		
 		//make pull request
-		send("pull".getBytes());
+		boolean continueSend = true;
+		while(continueSend)
+			continueSend = !send("pull".getBytes());
 		
 		//listen for ports
 		listen.clear();
@@ -234,12 +232,7 @@ public class ClientTwoWay extends Thread{
 		while(length != 1) {
 			listIn = listen.getMessages();
 			length = listIn.size();
-			try {
-				sleep(50);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			while(!delay.delay());
 		}//end listen
 		String[] ports = new String(listIn.get(0)).split("-");
 		

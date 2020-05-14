@@ -87,10 +87,6 @@ public class Client{
 			while(!d.delay());
 			return true;
 		}catch(Exception e) {
-			//close program
-			JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
-			Client.getTwoWay().disconnect();
-			System.exit(0);
 			return false;
 		}//end try
 	}//end sendToServer

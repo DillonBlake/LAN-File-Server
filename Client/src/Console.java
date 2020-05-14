@@ -18,7 +18,7 @@ public class Console extends JFrame implements WindowListener{
 	private JPanel panel;
 	private OutputWin output;
 	
-	public Console() throws UnknownHostException {
+	public Console() {
 		//housekeeping
 		setSize(600, 300);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);

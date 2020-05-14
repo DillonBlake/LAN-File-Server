@@ -8,10 +8,18 @@ public class OutputWin extends ScrollPane{
 	private String textOut;
 	private JTextPane textPane;
 	
-	public OutputWin() throws UnknownHostException {
+	public OutputWin() {
 		//set default text
-		InetAddress localHost = InetAddress.getLocalHost();
-		textOut = "Console for: " + localHost.getHostAddress();
+		InetAddress localHost;
+		textOut = "";
+		
+		//get the host address
+		try {
+			localHost = InetAddress.getLocalHost();
+			textOut = "Console for: " + localHost.getHostAddress();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}//end catch
 		
 		//create text pane
 		textPane = new JTextPane();
