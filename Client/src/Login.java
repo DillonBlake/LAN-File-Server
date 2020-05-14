@@ -1,13 +1,19 @@
+/*
+ * This is the class for the login window.
+ * When an instance is created, a window will appear to collect a usernmae and password.
+ * Once the sign in button is clicked, the login method in the ClientTwoWay is called
+ * and the username and password are passed in as parameters. The login window is then removed.
+ * This class is a child of the JFrame class and implements the ActionListener class
+ */
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
@@ -20,7 +26,7 @@ public class Login extends JFrame implements ActionListener{
 	private JButton loginBtn;
 	
 	/*
-	 * constructor sets up the frame
+	 * Constructor sets up the frame
 	 */
 	public Login() {
 		//housekeeping
@@ -57,6 +63,10 @@ public class Login extends JFrame implements ActionListener{
 	}
 
 	@Override
+	/*
+	 * Listens for a button click and then calls login for the ClientTwoWay created in Client.
+	 * @param: ActionEvent e: The event from the JButton
+	 */
 	public void actionPerformed(ActionEvent e) {
 		String username = userFld.getText();
 		String password = new String(passFld.getPassword());
@@ -69,4 +79,4 @@ public class Login extends JFrame implements ActionListener{
 		
 	}//end actionPerformed
 
-}
+}//end Login

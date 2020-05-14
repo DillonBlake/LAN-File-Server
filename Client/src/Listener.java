@@ -1,9 +1,14 @@
+/*
+ * This class is used to listen for messages on a port.
+ * It collects the messages in an ArrayList which can be read and reset by another class.
+ * The Listener class is ran on a thread.
+ */
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-
 import javax.swing.JOptionPane;
 
 public class Listener extends Thread{
@@ -11,6 +16,10 @@ public class Listener extends Thread{
 	private int port;
 	private ArrayList<byte[]> messages;
 	
+	/*
+	 * The constructor for the Listener
+	 * @param int p: The port that is to be listened on
+	 */
 	public Listener(int p) {
 		port = p;
 		messages = new ArrayList<byte[]>();
@@ -37,7 +46,7 @@ public class Listener extends Thread{
 				server.close();
 				messages.add(data);
 			} catch (IOException e) {
-				//close program
+				//close program if there is a problem
 				JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
 				Client.getTwoWay().disconnect();
 				System.exit(0);

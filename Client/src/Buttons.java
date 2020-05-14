@@ -1,10 +1,14 @@
+/*
+ * This class manages the button grid for the console.
+ * It is a child of the JPanel class
+ * The ActionListener is implemented as well
+ */
+
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
-
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -18,6 +22,9 @@ public class Buttons extends JPanel implements ActionListener{
 	private GridLayout grid;
 	private BackgroundSyncer syncer;
 
+	/*
+	 * The constructor for Buttons. This sets up the button grid.
+	 */
 	public Buttons() {
 		backSync = false;
 		syncer = new BackgroundSyncer();
@@ -86,7 +93,7 @@ public class Buttons extends JPanel implements ActionListener{
 	/*
 	 * Change server folder directly with a file chooser
 	 */
-	public static void changeDirectory() {
+	private static void changeDirectory() {
 		//file chooser
 		try {
 			JFileChooser chooser = new JFileChooser();

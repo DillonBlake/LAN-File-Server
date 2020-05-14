@@ -1,11 +1,14 @@
+/*
+ * This class runs a background task to sync on a given time interval
+ */
 
 public class BackgroundSyncer extends Thread{
 	
 	private boolean sync;
-	private int sleepTime = 20000;
+	private int sleepTime = 60 * 10 * 1000; //set to 10 minutes
 	
 	/*
-	 * Constructor sets up the syncer
+	 * Constructor sets up the syncer. It will not sync until enabled
 	 */
 	public BackgroundSyncer() {
 		sync = false;
@@ -17,11 +20,13 @@ public class BackgroundSyncer extends Thread{
 	 */
 	public void run() {
 		while(true) {
+			//small delay to start
 			try {
 				sleep(50);
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
+			//check if should sync and if main delay should be triggered
 			if(sync) {
 				try {
 					Client.getTwoWay().sync();

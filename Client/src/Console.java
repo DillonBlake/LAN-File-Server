@@ -1,16 +1,17 @@
+/*
+ * This class is the console frame for the client side.
+ * It is a child of the JFrame class and it implements WindowListener to handle exits.
+ * It adds a Buttons object and an OutputWin object to the frame
+ */
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextPane;
 
 public class Console extends JFrame implements WindowListener{
 	
@@ -18,6 +19,9 @@ public class Console extends JFrame implements WindowListener{
 	private JPanel panel;
 	private OutputWin output;
 	
+	/*
+	 * The constructor for Console. This creates the JFrame.
+	 */
 	public Console() {
 		//housekeeping
 		setSize(600, 300);
@@ -54,17 +58,22 @@ public class Console extends JFrame implements WindowListener{
 
 	@Override
 	public void windowOpened(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+		//NOT USED
 	}
 
 	@Override
+	/*
+	 * This overrides the windowClosing method so that when the window is closed, 
+	 * the user is prompted as to whether or not they want to disconnect.
+	 * @param WindowEvent e: The WindowEvent that has occurred
+	 */
 	public void windowClosing(WindowEvent e) {
 		int confirm = JOptionPane.showOptionDialog(
 	             null, "Are You Sure to Close Application and Disconnect From Server?", 
 	             "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
 	             JOptionPane.QUESTION_MESSAGE, null, null, null);
 	    if (confirm == 0) {
+	    	//disconnect and close if confirmed
 	    	Client.getTwoWay().disconnect();
 	        System.exit(0);
 	    }//end if confirm
@@ -72,32 +81,27 @@ public class Console extends JFrame implements WindowListener{
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+		//NOT USED
 	}//end windowClosed
 
 	@Override
 	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+		//NOT USED
 	}
 
 	@Override
 	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+		//NOT USED
 	}
 
 	@Override
 	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+		//NOT USED
 	}
 
 	@Override
 	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+		//NOT USED
 	}
 	
 }//end Console
