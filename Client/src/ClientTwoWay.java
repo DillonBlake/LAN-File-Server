@@ -39,7 +39,7 @@ public class ClientTwoWay extends Thread{
 		console = new Console();
 		console.setVisible(false);
 		console.update("Connected to server at: " + ip);
-		mem = new MemoryThread();
+		//mem = new MemoryThread();
 		start();
 	}//end constructor
 	
@@ -110,8 +110,9 @@ public class ClientTwoWay extends Thread{
 	/*
 	 * Sends a byte message to connection ip on out
 	 * @param byte[] msg: The message to be sent in bytes
+	 * @return boolean sent: if the message was successfully sent
 	 */
-	private void send(byte[] msg) {
+	private boolean send(byte[] msg) {
 		try {
 			Socket socket = new Socket(ip, portOut);
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -120,30 +121,13 @@ public class ClientTwoWay extends Thread{
 			out.close();
 			socket.close();
 			sleep(50);
+			return true;
 		}catch(Exception e) {
 			//close program
 			JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
 			Client.getTwoWay().disconnect();
 			System.exit(0);
-		}//end try
-	}//end sendToServer
-	
-	/*
-	 * Sends a response code to client
-	 * @param int code: The response code to send
-	 */
-	private void send(int code) {
-		try {
-			Socket socket = new Socket(ip, portOut);
-			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-			out.writeInt(code);
-			out.close();
-			socket.close();
-		}catch(Exception e) {
-			//close program
-			JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
-			disconnect();
-			System.exit(0);
+			return false;
 		}//end try
 	}//end sendToServer
 	
@@ -176,7 +160,9 @@ public class ClientTwoWay extends Thread{
 		//request a sync and listen for ports
 		listen.clear();
 		String msg = "sync-" + Integer.toString(files.length);
-		send(msg.getBytes());
+		boolean continueSend = true;
+		while(continueSend)
+			continueSend = !send(msg.getBytes());
 		int length = 0;
 		ArrayList<byte[]> listIn = new ArrayList<byte[]>();
 		while(length != 1) {
