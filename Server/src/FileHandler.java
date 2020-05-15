@@ -1,3 +1,12 @@
+/*
+ * This class handles incoming and outgoing files.
+ * For incoming files, each file is given an ID.
+ * The ID is the key to a Hashtable with the encrypted name of the file.
+ * The compressed and encrypted file data is stored in a file under the ID.
+ * All of this is in the user's folder.
+ * For outgoing files, the file name for the ID is sent and the compressed and encrypted data for the ID is sent.
+ */
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,9 +22,16 @@ public class FileHandler extends Thread{
 	private TwoWay conn;
 	private boolean complete;
 
-	public FileHandler(int p, String user, int num, int m, TwoWay tw) {
+	/*
+	 * The constructor for catching files
+	 * @param int p: The port to listen on
+	 * @param String user: The username
+	 * @param int num: The id of the file
+	 * @param TwoWay tw: The TwoWay connection
+	 */
+	public FileHandler(int p, String user, int num, TwoWay tw) {
 		port = p;
-		mode = m;
+		mode = 0;
 		username = user;
 		conn = tw;
 		id = num;
@@ -23,16 +39,26 @@ public class FileHandler extends Thread{
 		start();
 	}//end constructor
 	
-	public FileHandler(int p, String user, int num, int m, String addr, TwoWay tw) {
+	/*
+	 * The constructor for sending files
+	 * @param int p: The port to send on
+	 * @param String user: The usernmae
+	 * @param int num: The file id
+	 * @param String addr: The ip to send to
+	 * @param TwoWay tw: The TwoWay connection
+	 */
+	public FileHandler(int p, String user, int num, String addr, TwoWay tw) {
 		port = p;
-		mode = m; 
+		mode = 1; 
 		username = user;
-		mode = m;
 		id = num;
 		conn = tw;
 		start();
 	}//end constructor 
 	
+	/*
+	 * The run method called by start()
+	 */
 	public void run() {
 		if(mode == 0) {
 			listen = new Listener(port);
@@ -58,7 +84,6 @@ public class FileHandler extends Thread{
 				e.printStackTrace();
 			}
 		}//end listen loop
-		System.out.println("file received");
 		
 		//get the bytes
 		byte[] fileName = listIn.get(0);
@@ -77,10 +102,10 @@ public class FileHandler extends Thread{
 			e.printStackTrace();
 		}
 		
-		System.out.println(fileName + ": got");
-		
 		//finish
 		RunServer.removePort(port);
+		System.out.println("File received from " + ip + ": " + id);
+		RunServer.addMessage("File received from " + ip + ": " + id);
 		complete = true;
 		
 	}//end catcher
@@ -89,20 +114,12 @@ public class FileHandler extends Thread{
 	 * This method sends the stored files back to the client
 	 */
 	public void sender() {
-		System.out.println("Port: " + port);
-		boolean continueSend = true;
-		System.out.println(id);
 		byte[] name = conn.getName(id);
 		
 		//send name
-		while(continueSend) {
-			try {
-				continueSend = !send(name);
-			}catch(Exception e) {
-				System.out.println(e.getMessage());
-			}//end catch
-			System.out.println("sending");
-		}//end while
+		boolean continueSend = true;
+		while(continueSend) 
+			continueSend = !send(name);
 		
 		//send data
 		continueSend = true;
@@ -115,7 +132,6 @@ public class FileHandler extends Thread{
 				streamIn.read(data);
 				streamIn.close();
 				continueSend = !send(data);
-				System.out.println(continueSend);
 			}catch(Exception e) {
 				e.printStackTrace();
 			}//end catch
@@ -123,6 +139,8 @@ public class FileHandler extends Thread{
 		
 		//finish
 		RunServer.removePort(port);
+		System.out.println("File sent to " + ip + " from: " + id);
+		RunServer.addMessage("File sent to " + ip + " from: " + id);
 		complete = true;
 		
 	}//end sender

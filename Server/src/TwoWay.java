@@ -201,7 +201,7 @@ public class TwoWay extends Thread{
 		String ports = "";
 		for(int i = 0; i < count; i++) {
 			int port = RunServer.getPort();
-			handlers.add(new FileHandler(port, username, usedIds.get(i), 0, this));
+			handlers.add(new FileHandler(port, username, usedIds.get(i), this));
 			ports = ports + Integer.toString(port) + "-";
 			sendPorts.add(port);
 		}//end for
@@ -246,7 +246,7 @@ public class TwoWay extends Thread{
 		String ports = "";
 		for(int i = 0; i < ids.length; i++) {
 			int port = RunServer.getPort();
-			handlers.add(new FileHandler(port, username, ids[i], 1, ip, this));
+			handlers.add(new FileHandler(port, username, ids[i], ip, this));
 			ports = ports + Integer.toString(port) + "-";
 			sendPorts.add(port);
 		}//end for

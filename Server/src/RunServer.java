@@ -1,16 +1,21 @@
+/*
+ * This class contains the main method for the server program.
+ * This class listens for requests to establish a connection.
+ * It then sends ports back to the client requesting and opens a TwoWay.
+ * The main purpose of this class is to manage accounts and connections.
+ */
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.Random;
 
 public class RunServer {
@@ -24,12 +29,17 @@ public class RunServer {
 	
 	private static ArrayList<Integer> usedPorts = new ArrayList<Integer>();
 	private static ArrayList<TwoWay> connections = new ArrayList<TwoWay>();
+	private static ServerConsole console = new ServerConsole();
 	
 	private static String ip;
-	private static Dictionary accounts;
+	private static Hashtable accounts;
 	private static byte[] salt;
-
-	public static void main(String[] args) throws IOException {
+	
+	/*
+	 * The main method that listens for and establishes connections
+	 * @param String[] args
+	 */
+	public static void main(String[] args) {
 		usedPorts.add(GETPORT);
 		usedPorts.add(SENDPORT);
 		
@@ -39,7 +49,7 @@ public class RunServer {
 			File accountFile = new File(ACCOUNTS);
 			FileInputStream inStream = new FileInputStream(accountFile);
 			ObjectInputStream objectIn = new ObjectInputStream(inStream);
-			accounts = (Dictionary) objectIn.readObject();
+			accounts = (Hashtable) objectIn.readObject();
 			objectIn.close();
 			inStream.close();
 		} catch (Exception e) {
@@ -62,19 +72,23 @@ public class RunServer {
 		
 		//ip listen loop
 		while(true) {
-			ServerSocket getter = new ServerSocket(GETPORT);
-			Socket socketIn = getter.accept();
-			System.out.println("client accepted");
-			DataInputStream streamIn = new DataInputStream(socketIn.getInputStream());
-			int length = streamIn.readInt();
-			byte[] dataIn = new byte[length];
-			streamIn.readFully(dataIn,0,length);
-			ip = new String(dataIn);
-			System.out.println(ip);
-			streamIn.close();
-			socketIn.close();
-			getter.close();
-			addConnection(ip);
+			try {
+				ServerSocket getter = new ServerSocket(GETPORT);
+				Socket socketIn = getter.accept();
+				System.out.println("new client");
+				addMessage("New client at " + socketIn.getLocalAddress().toString());
+				DataInputStream streamIn = new DataInputStream(socketIn.getInputStream());
+				int length = streamIn.readInt();
+				byte[] dataIn = new byte[length];
+				streamIn.readFully(dataIn,0,length);
+				ip = new String(dataIn);
+				streamIn.close();
+				socketIn.close();
+				getter.close();
+				addConnection(ip);
+			}catch(Exception e) {
+				System.out.println("Main Listener Error");
+			}//end catch
 		}//end while
 	}//end main
 	
@@ -83,7 +97,9 @@ public class RunServer {
 	 * @param String ip: Address of client
 	 */
 	private static void addConnection(String ip) {
-		send(salt);
+		boolean continueSend = true;
+		while(continueSend)
+			continueSend = !send(salt);
 		//get ports
 		int portIn = getPort();
 		int portOut = getPort();
@@ -91,8 +107,9 @@ public class RunServer {
 		connections.add(new TwoWay(portIn, portOut, ip));
 		//send ports to client
 		String ports = Integer.toString(portIn) + "-" + Integer.toString(portOut);
-		send(ports.getBytes());
-		System.out.println("sent");
+		continueSend = true;
+		while(continueSend)
+			continueSend = !send(ports.getBytes());
 	}//end addConnection
 	
 	/*
@@ -141,7 +158,7 @@ public class RunServer {
 	 * Sends a byte message to connection ip on out
 	 * @param byte[] msg: The message to be sent in bytes
 	 */
-	private static void send(byte[] msg) {
+	private static boolean send(byte[] msg) {
 		try {
 			Socket socket = new Socket(ip, SENDPORT);
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -151,8 +168,10 @@ public class RunServer {
 			socket.close();
 			Delay d = new Delay();
 			while(!d.delay());
+			return true;
 		}catch(Exception e) {
 			System.out.println(e.getMessage());
+			return false;
 		}//end try
 	}//end sendToServer
 	
@@ -160,7 +179,7 @@ public class RunServer {
 	 * Gets the user accounts
 	 * @return Dictionary of accounts
 	 */
-	public static Dictionary getAccounts() {
+	public static Hashtable getAccounts() {
 		return accounts;
 	}//end getAccounts
 	
@@ -197,5 +216,13 @@ public class RunServer {
 	public static void removePort(int port) {
 		usedPorts.add(new Integer(port));
 	}//end removePort
+	
+	/*
+	 * Add message to console
+	 * @param String txt: The message to add
+	 */
+	public static void addMessage(String txt) {
+		console.updateText(txt);
+	}//end addMessage
 	
 }//end RunServer

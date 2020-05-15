@@ -5,7 +5,7 @@
 
 public class Delay extends Thread{
 	
-	private int defaultTime = 50;
+	private final int defaultTime = 50;
 	private int time;
 	
 	/*
