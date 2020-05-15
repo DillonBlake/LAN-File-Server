@@ -48,7 +48,7 @@ public class ClientTwoWay {
 		console.update("Connected to server at: " + ip);
 		listen = new Listener(portIn);
 		delay = new Delay();
-		
+	
 		//get user info
 		Login login = new Login();
 	}//end constructor
@@ -78,10 +78,8 @@ public class ClientTwoWay {
 			byte[] hash = md.digest();
 			//send username
 			send(username.getBytes());
-			System.out.println("username sent");
 			//send password
 			send(hash);
-			System.out.println("pass sent");
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -153,10 +151,6 @@ public class ClientTwoWay {
 	        }
 	    });//end the filter
 		
-		
-		for(File f: files)
-			System.out.println(f.toString());
-		
 		//request a sync and listen for ports
 		listen.clear();
 		String msg = "sync-" + Integer.toString(files.length);
@@ -218,7 +212,6 @@ public class ClientTwoWay {
 		String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 		File folder = new File(choice + "/pull-" + timeStamp.replace(" ", "-"));
 		folder.mkdir();
-		System.out.println(folder.getAbsolutePath());
 		
 		//make pull request
 		boolean continueSend = true;
@@ -235,8 +228,7 @@ public class ClientTwoWay {
 			while(!delay.delay());
 		}//end listen
 		String[] ports = new String(listIn.get(0)).split("-");
-		
-		//ProgressWindow win = new ProgressWindow(ports.length);
+	
 		//open pipes
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 		for(int i = 0; i < ports.length; i++) {
@@ -247,13 +239,23 @@ public class ClientTwoWay {
 			}//end catch
 		}//end for
 		
+		//check if finished
+		ArrayList<Pipe> completed = new ArrayList<Pipe>();
+		while(completed.size() != pipes.size())
+			for(Pipe p: pipes) {
+				if(p.isComplete() && !completed.contains(p)){
+					completed.add(p);
+					console.update("File got - " + p.getFileName());
+				}//end if
+			}//end for
+		console.update("Pull Complete");
+		
 	}//end pull
 	
 	/*
 	 * Disconnects from server
 	 */
 	public void disconnect() {
-		System.out.println("dis");
 		send("disconnect".getBytes());
 	}//end disconnect
 	

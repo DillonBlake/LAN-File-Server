@@ -1,35 +1,40 @@
-import java.io.ByteArrayInputStream;
+/*
+ * This class connects to the server to send or receive files
+ * It handles the encryption/ decryption process and the compression/decompression.
+ * The Advanced Encryption Standard is used and the Deflater class at default compression level is used.
+ * Each instance of Pipe is ran on its own thread.
+ */
+
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.Socket;	
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
-import java.util.zip.InflaterInputStream;
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.swing.JOptionPane;
 
 public class Pipe extends Thread{
 
 	public static final String ALG = "AES";
-	
-	private String url, address, fileLocation;
-	private final String TEMP_DIREC = "/Users/dillonblake/Desktop/Sync/Utility/temp";
-	private final String DIRECTORY = "/Users/dillonblake/Desktop/Sync/";
+	private String url, address, fileLocation, fileName;
 	private boolean complete;
 	private int mode, port;
-	SecretKey key;
+	private SecretKey key;
 	
+	/*
+	 * The constructor to send a file
+	 * @param String url: The file directory
+	 * @param int p: The port to send on
+	 * @param String sendTo: The ip to send to
+	 * @param SecretKey key: The encryption key
+	 */
 	public Pipe(String url, int p, String sendTo, SecretKey key) throws NoSuchAlgorithmException {
 		this.url = url;
 		this.key = key;
@@ -40,6 +45,13 @@ public class Pipe extends Thread{
 		start();
 	}//end constructor
 	
+	/*
+	 * The constructor to receive a file
+	 * @param int p: The port to listen on
+	 * @param String getFrom: The ip to that is sending the file
+	 * @param SecretKey key: The decryption key
+	 * @param String fLoc: The directory to story the file in
+	 */
 	public Pipe(int p, String getFrom, SecretKey key, String fLoc) throws NoSuchAlgorithmException {
 		this.key = key;
 		port = p;
@@ -48,8 +60,12 @@ public class Pipe extends Thread{
 		complete = false;
 		mode = 1;
 		start();
-	}
+	}//end constructor
 	
+	/*
+	 * The run method to be called by start()
+	 * Either sends or receives based on the mode
+	 */
 	public void run() {
 		if(mode == 0) {
 			sendFile();
@@ -58,6 +74,11 @@ public class Pipe extends Thread{
 		}
 	}//end run
 	
+	/*
+	 * This trims the file name bytes. 
+	 * Extra bytes are added in the sending process and have to be removed
+	 * @param byte[] input: The string in bytes
+	 */
 	public byte[] trim(byte[] input) {
 		byte[] trimmed = new byte[input.length - 2];
 		for(int i = 0; i < input.length; i++)
@@ -74,7 +95,7 @@ public class Pipe extends Thread{
 			finalBytes[i] = cutBytes.get(i);
 		
 		return finalBytes;
-	}
+	}//end trim
 	
 	/*
 	 * This method first receives and decrypts the name of the file.
@@ -93,21 +114,16 @@ public class Pipe extends Thread{
 			while(responseLength != 2) {
 				responseList = listen.getMessages();
 				responseLength = responseList.size();
-				System.out.println(responseLength);
 				sleep(50);
 			}//end while
-			
-			System.out.println("got data");
 		
-			
 			//decrypt name
 			byte[] secureNameByte = responseList.get(0);
 			byte[] nameByte;
 			cipher.init(Cipher.DECRYPT_MODE, key);
 			nameByte = cipher.doFinal(Base64.getDecoder().decode(secureNameByte));
 			String name = new String(trim(nameByte));
-			System.out.println(name);
-			System.out.println("name decrypted");
+			fileName = name;
 			
 			//get the data
 			byte[] secureCompData = responseList.get(1);
@@ -115,7 +131,6 @@ public class Pipe extends Thread{
 			//decrypt to compressed file
 			byte[] compData;
 			compData = cipher.doFinal(Base64.getDecoder().decode(secureCompData));
-			System.out.println("data decrypted");
 			
 			//decompress compressed bytes
 			byte[] fileData;
@@ -136,7 +151,6 @@ public class Pipe extends Thread{
 			FileOutputStream fOut = new FileOutputStream(newFile);
 			fOut.write(fileData);
 			fOut.close();
-			System.out.println("written final");
 	
 			//set complete to true
 			complete = true;
@@ -163,7 +177,7 @@ public class Pipe extends Thread{
 			//encrypt name
 			String[] split = url.split("/");
 			String name = split[split.length - 1];
-			System.out.println("name: " + name);
+			fileName = name;
 			byte[] secureName;
 			cipher.init(Cipher.ENCRYPT_MODE, key);
 			secureName = cipher.doFinal(name.getBytes("UTF-16"));
@@ -225,7 +239,7 @@ public class Pipe extends Thread{
 	 * Sends a byte message to connection ip on out
 	 * @param byte[] msg: The message to be sent in bytes
 	 */
-	public boolean send(byte[] msg) {
+	private boolean send(byte[] msg) {
 		try {
 			Socket socket = new Socket(address, port);
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -235,11 +249,6 @@ public class Pipe extends Thread{
 			socket.close();
 			return true;
 		}catch(Exception e) {
-			//close program
-			System.out.println("send error");
-			//JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
-			//Client.getTwoWay().disconnect();
-			//System.exit(0);
 			return false;
 		}//end try
 	}//end sendToServer
@@ -257,8 +266,7 @@ public class Pipe extends Thread{
 	 * @return String name
 	 */
 	public String getFileName() {
-		String[] list = url.split("/");
-		return list[list.length - 1];
+		return fileName;
 	}//end getFileName
 	
 }//end Pipe

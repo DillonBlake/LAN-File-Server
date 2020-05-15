@@ -56,7 +56,6 @@ public class Client{
 			//parse the response
 			salt = listIn.get(0);
 			String ports = new String(listIn.get(1));
-			System.out.println("got ports");
 			portOut = Integer.parseInt(ports.split("-")[0]);
 			portIn = Integer.parseInt(ports.split("-")[1]);
 			
