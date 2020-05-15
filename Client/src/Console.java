@@ -53,7 +53,7 @@ public class Console extends JFrame implements WindowListener{
 	 * @param String msg: The message to add
 	 */
 	public void update(String msg) {
-		output.addOuput(msg);
+		output.addOutput(msg);
 	}//end update
 
 	@Override

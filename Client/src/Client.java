@@ -26,7 +26,11 @@ public class Client{
     private static ClientTwoWay twoWay;
     private static byte[] salt = null;
     
-	public static void main(String args[]) throws NoSuchAlgorithmException, UnknownHostException {
+    /*
+     * The main method sets up the ClientTwoWay
+     * @param String[] args
+     */
+	public static void main(String args[]) {
 		
 		//setup directories
 		changeDirectory();

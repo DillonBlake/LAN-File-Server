@@ -41,7 +41,7 @@ public class OutputWin extends ScrollPane {
 	 * This adds text to the text output.
 	 * @param String txt: The text to add
 	 */
-	public void addOuput(String txt) {
+	public void addOutput(String txt) {
 		textOut = textOut + "\n" + txt;
 		textPane.setText(textOut);
 	}//end addOutput
