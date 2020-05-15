@@ -98,7 +98,7 @@ public class RunWizard {
 		}//end catch
 		
 		//output info
-		JOptionPane.showMessageDialog(null, "Setup Complete! Please copy the url below and enter it when you start the server app.\n\n" + mainFolder);
+		JOptionPane.showMessageDialog(null, "Setup Complete! Please remember the path bellow to open the server.\n\n" + mainFolder);
 	}//end setup
 
 }//end RunWizard
