@@ -7,6 +7,7 @@ import java.awt.ScrollPane;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 
 public class OutputWin extends ScrollPane {
 
@@ -42,8 +43,12 @@ public class OutputWin extends ScrollPane {
 	 * @param String txt: The text to add
 	 */
 	public void addOutput(String txt) {
-		textOut = textOut + "\n" + txt;
-		textPane.setText(textOut);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {	
+				textOut = textOut + "\n" + txt;
+				textPane.setText(textOut);
+			}//end run
+		});//end Runnable
 	}//end addOutput
 	
 }//end OutputWin

@@ -11,14 +11,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.Socket;	
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
-import javax.swing.JOptionPane;
 
 public class Pipe extends Thread{
 
@@ -35,7 +33,7 @@ public class Pipe extends Thread{
 	 * @param String sendTo: The ip to send to
 	 * @param SecretKey key: The encryption key
 	 */
-	public Pipe(String url, int p, String sendTo, SecretKey key) throws NoSuchAlgorithmException {
+	public Pipe(String url, int p, String sendTo, SecretKey key) {
 		this.url = url;
 		this.key = key;
 		port = p;
@@ -52,7 +50,7 @@ public class Pipe extends Thread{
 	 * @param SecretKey key: The decryption key
 	 * @param String fLoc: The directory to story the file in
 	 */
-	public Pipe(int p, String getFrom, SecretKey key, String fLoc) throws NoSuchAlgorithmException {
+	public Pipe(int p, String getFrom, SecretKey key, String fLoc) {
 		this.key = key;
 		port = p;
 		address = getFrom;
@@ -157,7 +155,7 @@ public class Pipe extends Thread{
 			
 		}catch(Exception e) {
 			//close program
-			JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
+			Client.throwError();
 			Client.getTwoWay().disconnect();
 			System.exit(0);
 		}//end catch
@@ -193,6 +191,7 @@ public class Pipe extends Thread{
 			//open and read original
 			File originalFile = new File(url);
 			FileInputStream fIn = new FileInputStream(originalFile);
+			System.out.println(originalFile.length());
 			byte[] originalData = new byte[(int)originalFile.length()];
 			fIn.read(originalData);
 			fIn.close();
@@ -229,9 +228,9 @@ public class Pipe extends Thread{
 			
 		}catch(Exception e) {
 			//close program
-			JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
+			e.printStackTrace();
+			Client.throwError("t");
 			Client.getTwoWay().disconnect();
-			System.exit(0);
 		}//end catch
 	}//end send
 	

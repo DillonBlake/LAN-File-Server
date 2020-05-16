@@ -12,6 +12,7 @@ import java.awt.event.WindowListener;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 public class Console extends JFrame implements WindowListener{
 	
@@ -68,15 +69,20 @@ public class Console extends JFrame implements WindowListener{
 	 * @param WindowEvent e: The WindowEvent that has occurred
 	 */
 	public void windowClosing(WindowEvent e) {
-		int confirm = JOptionPane.showOptionDialog(
-	             null, "Are You Sure to Close Application and Disconnect From Server?", 
-	             "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
-	             JOptionPane.QUESTION_MESSAGE, null, null, null);
-	    if (confirm == 0) {
-	    	//disconnect and close if confirmed
-	    	Client.getTwoWay().disconnect();
-	        System.exit(0);
-	    }//end if confirm
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				int confirm = JOptionPane.showOptionDialog(
+			             null, "Are You Sure to Close Application and Disconnect From Server?", 
+			             "Exit Confirmation", JOptionPane.YES_NO_OPTION, 
+			             JOptionPane.QUESTION_MESSAGE, null, null, null);
+			    if (confirm == 0) {
+			    	//disconnect and close if confirmed
+			    	Client.getTwoWay().disconnect();
+			        System.exit(0);
+			    }//end if confirm
+			}//end run
+		});//end Runnable
+		    
 	}//end windowCLosing
 
 	@Override

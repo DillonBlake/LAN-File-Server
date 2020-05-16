@@ -20,7 +20,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
 public class ClientTwoWay {
 	
@@ -50,7 +49,7 @@ public class ClientTwoWay {
 		delay = new Delay();
 	
 		//get user info
-		Login login = new Login();
+		new Login();
 	}//end constructor
 	
 	/*
@@ -121,10 +120,6 @@ public class ClientTwoWay {
 			while(!delay.delay());
 			return true;
 		}catch(Exception e) {
-			//close program
-			JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
-			Client.getTwoWay().disconnect();
-			System.exit(0);
 			return false;
 		}//end try
 	}//end sendToServer
@@ -135,7 +130,7 @@ public class ClientTwoWay {
 	 * A pipe is opened for each file in the sync folder.
 	 * The pipe then sends the file to the server.
 	 */
-	public void sync() throws NoSuchAlgorithmException {
+	public void sync() {
 		console.update("Syncing...");
 		
 		//get list of files, but filter
@@ -150,6 +145,7 @@ public class ClientTwoWay {
 	            return true;
 	        }
 	    });//end the filter
+		System.out.println("files got");
 		
 		//request a sync and listen for ports
 		listen.clear();
@@ -157,6 +153,7 @@ public class ClientTwoWay {
 		boolean continueSend = true;
 		while(continueSend)
 			continueSend = !send(msg.getBytes());
+		System.out.println("sent");
 		int length = 0;
 		ArrayList<byte[]> listIn = new ArrayList<byte[]>();
 		while(length != 1) {
@@ -165,6 +162,7 @@ public class ClientTwoWay {
 			while(!delay.delay());
 		}//end listen loop
 		String[] ports = new String(listIn.get(0)).split("-");
+		System.out.println("response got");
 		
 		//open pipes
 		ArrayList<Pipe> pipes= new ArrayList<Pipe>();
@@ -173,6 +171,7 @@ public class ClientTwoWay {
 			int port = Integer.parseInt(ports[i]);
 			pipes.add(new Pipe(dir, port, ip, key));
 		}//end for file
+		System.out.println("pipes open");
 		
 		ArrayList<Pipe> completed = new ArrayList<Pipe>();
 		while(completed.size() != pipes.size())
@@ -205,7 +204,7 @@ public class ClientTwoWay {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Error!");
+			Client.throwError("Problem Finding Directory...Exiting");
 			System.exit(0);
 		} //end catch
 		//make folder
@@ -256,7 +255,10 @@ public class ClientTwoWay {
 	 * Disconnects from server
 	 */
 	public void disconnect() {
-		send("disconnect".getBytes());
+		boolean continueSend = true;
+		while(continueSend)
+			continueSend = !send("disconnect".getBytes());
+		System.exit(0);
 	}//end disconnect
 	
 	/*
@@ -266,4 +268,5 @@ public class ClientTwoWay {
 	public Console getConsole() {
 		return console;
 	}
+
 }//end TwoWay

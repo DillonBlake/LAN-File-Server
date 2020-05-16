@@ -5,6 +5,7 @@
  */
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 public class Buttons extends JPanel implements ActionListener{
 	
@@ -56,12 +58,13 @@ public class Buttons extends JPanel implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == syncBtn) {
-			try {
-				Client.getTwoWay().sync();
-			} catch (NoSuchAlgorithmException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}//end catch
+			Runnable r = new Runnable() {
+				public void run(){
+					Client.getTwoWay().sync();
+				}//end run
+			};//end Runnable
+			Thread t = new Thread(r);
+			t.start();
 		}else if(e.getSource() == pullBtn) {
 			Client.getTwoWay().pull();
 		}else if(e.getSource() == directoryBtn) {
@@ -76,44 +79,49 @@ public class Buttons extends JPanel implements ActionListener{
 	 * This method changes the background sync settings
 	 */
 	public void toggleSync() {
-		if(backSync) {
-			syncer.disable();
-			backSync = false;
-			backgroundBtn.setForeground(Color.RED);
-			backgroundBtn.setText("Background Sync: Off");
-		}else {
-			syncer.enable();
-			backSync = true;
-			backgroundBtn.setForeground(Color.GREEN);
-			backgroundBtn.setText("Background Sync: On");
-		}//end else
-		
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {	
+				if(backSync) {
+					syncer.disable();
+					backSync = false;
+					backgroundBtn.setForeground(Color.RED);
+					backgroundBtn.setText("Background Sync: Off");
+				}else {
+					syncer.enable();
+					backSync = true;
+					backgroundBtn.setForeground(Color.GREEN);
+					backgroundBtn.setText("Background Sync: On");
+				}//end else
+			}//end run
+		});//end Runnable
 	}//end toggleSync
 	
 	/*
 	 * Change server folder directly with a file chooser
 	 */
 	private static void changeDirectory() {
-		//file chooser
-		try {
-			JFileChooser chooser = new JFileChooser();
-			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			chooser.setDialogTitle("Please Select The Folder Your Want To Sync");
-			int result = chooser.showOpenDialog(null);
-			if(result == JFileChooser.APPROVE_OPTION) {
-				Client.mainDir = chooser.getSelectedFile().getAbsolutePath();
-				Client.utilitiesDir = Client.mainDir + "/Utility";
-				Client.keyDir = Client.utilitiesDir + "/key";
-				Client.tempDir = Client.utilitiesDir + "/temp";
-				Client.getTwoWay().getConsole().update("Sync Location Changed To:\n" + Client.mainDir);
-			}else {
-				//no else
-			}//end else
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Error!");
-			System.exit(0);
-		} //end catch
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				//file chooser
+				try {
+					JFileChooser chooser = new JFileChooser();
+					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					chooser.setDialogTitle("Please Select The Folder Your Want To Sync");
+					int result = chooser.showOpenDialog(null);
+					if(result == JFileChooser.APPROVE_OPTION) {
+						Client.mainDir = chooser.getSelectedFile().getAbsolutePath();
+						Client.utilitiesDir = Client.mainDir + "/Utility";
+						Client.keyDir = Client.utilitiesDir + "/key";
+						Client.tempDir = Client.utilitiesDir + "/temp";
+						Client.getTwoWay().getConsole().update("Sync Location Changed To:\n" + Client.mainDir);
+					}else {
+						//no else
+					}//end else
+				} catch (Exception e) {
+					Client.throwError("Problem Finding Directory...Exiting");
+				} //end catch
+			}//end run
+		});//end Runnable
 	}//end changeDirectory
+	
 }//end Buttons

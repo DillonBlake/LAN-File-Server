@@ -16,6 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 public class Login extends JFrame implements ActionListener{
 	
@@ -68,14 +69,19 @@ public class Login extends JFrame implements ActionListener{
 	 * @param: ActionEvent e: The event from the JButton
 	 */
 	public void actionPerformed(ActionEvent e) {
-		String username = userFld.getText();
-		String password = new String(passFld.getPassword());
 		
-		if(e.getSource() == loginBtn && !username.equals("")){
-			Client.getTwoWay().login(username, password);
-			setVisible(false);
-			dispose();
-		}//end if
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				String username = userFld.getText();
+				String password = new String(passFld.getPassword());
+				
+				if(e.getSource() == loginBtn && !username.equals("")){
+					Client.getTwoWay().login(username, password);
+					setVisible(false);
+					dispose();
+				}//end if
+			}//end run
+		});//end Runnable
 		
 	}//end actionPerformed
 

@@ -5,15 +5,13 @@
  * With these ports, a ClientTwoWay object is created and the bulk of the processing switches to that object
  */
 
-import java.awt.EventQueue;
 import java.io.DataOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class Client{
     
@@ -38,8 +36,17 @@ public class Client{
 		//open listener on the GETPORT
 		Listener listen = new Listener(GETPORT);
 		
-		//open main socket
-		ip = JOptionPane.showInputDialog("Please enter the ip adress of the server you are trying to connect to:");
+		//get ip
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {
+					ip = JOptionPane.showInputDialog("Please enter the ip adress of the server you are trying to connect to:");
+				}//end run
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}//end Runnable
+		
 		try {
 			//send ip
 			InetAddress localHost = InetAddress.getLocalHost();
@@ -67,7 +74,7 @@ public class Client{
 			twoWay = new ClientTwoWay(portIn, portOut, ip);
 		}catch(Exception e){
 			//close if socket can't be connected
-			JOptionPane.showMessageDialog(null, "Connection Failed");
+			throwError();
 			System.exit(0);
 		}//end catch
 		
@@ -103,6 +110,34 @@ public class Client{
 	}//end getSalt
 	
 	/*
+	 * Shows a message box for an error
+	 * @param String txt: The text to show
+	 * 
+	 */
+	public static void throwError(String txt) {
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+			    @Override
+			    public void run() {
+			    	JOptionPane.showMessageDialog(null, txt, "Error", JOptionPane.WARNING_MESSAGE);
+			    }//end run
+			});//end Runnable
+		} catch (Exception e) {
+			e.printStackTrace();
+		}//end catch
+	}//end throwError
+	
+	/*
+	 * Shows a message box for a connection error
+	 */
+	public static void throwError() {
+		throwError("Connection Error...Disconnecting");
+		if(twoWay != null)
+			twoWay.disconnect();
+		System.exit(0);
+	}//end throwError
+	
+	/*
 	 * Get the TwoWay
 	 * @return ClientTwoWay
 	 */
@@ -116,7 +151,7 @@ public class Client{
 	private static void changeDirectory() {
 		//file chooser
 		try {
-			EventQueue.invokeAndWait(new Runnable() {
+			SwingUtilities.invokeAndWait(new Runnable() {
 			@Override
 			public void run() {
 				JFileChooser chooser = new JFileChooser();
@@ -141,7 +176,7 @@ public class Client{
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Error!");
+			throwError("Problem Finding Directory...Exiting");
 			System.exit(0);
 		} //end catch
 	}//end changeDirectory
