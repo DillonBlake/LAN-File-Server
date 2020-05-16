@@ -155,7 +155,7 @@ public class Pipe extends Thread{
 			
 		}catch(Exception e) {
 			//close program
-			Client.throwError();
+			Client.throwError("Could not pull file from server...Disconnecting");
 			Client.getTwoWay().disconnect();
 			System.exit(0);
 		}//end catch
@@ -229,7 +229,7 @@ public class Pipe extends Thread{
 		}catch(Exception e) {
 			//close program
 			e.printStackTrace();
-			Client.throwError("t");
+			Client.throwError("Error on file:\n" + url + "\n...Disconnecting");
 			Client.getTwoWay().disconnect();
 		}//end catch
 	}//end send

@@ -9,6 +9,7 @@
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -255,10 +256,17 @@ public class ClientTwoWay {
 	 * Disconnects from server
 	 */
 	public void disconnect() {
-		boolean continueSend = true;
-		while(continueSend)
-			continueSend = !send("disconnect".getBytes());
-		System.exit(0);
+		try {
+			InetAddress localHost = InetAddress.getLocalHost();
+			String myIP = localHost.getHostAddress();
+			String toSend = myIP + "-dis";
+			boolean continueSend = true;
+			while(continueSend)
+				continueSend = !Client.send(toSend.getBytes());
+			System.exit(0);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}//end catch
 	}//end disconnect
 	
 	/*

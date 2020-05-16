@@ -85,7 +85,7 @@ public class Client{
 	 * @param byte[] msg: The message to be sent in bytes
 	 * @return boolean sent: true if sent successfully, false if failed
 	 */
-	private static boolean send(byte[] msg) {
+	public static boolean send(byte[] msg) {
 		try {
 			Socket socket = new Socket(ip, SENDPORT);
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -134,7 +134,6 @@ public class Client{
 		throwError("Connection Error...Disconnecting");
 		if(twoWay != null)
 			twoWay.disconnect();
-		System.exit(0);
 	}//end throwError
 	
 	/*
