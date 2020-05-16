@@ -33,7 +33,7 @@ public class ServerConsole extends JFrame{
 	 * Adds output to the console window
 	 * @param String txt: The text to add
 	 */
-	public void updateText(String txt) {
+	public void updateText(String txt) {		
 		textWin.addOutput(txt);
 	}//end updateText
 	

@@ -5,6 +5,7 @@
  * The main purpose of this class is to manage accounts and connections.
  */
 
+import java.awt.EventQueue;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -17,21 +18,23 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
+
 
 public class RunServer {
 	
 	public static final int GETPORT = 5000;
     public static final int SENDPORT= 5001;
-	public static final String DIRECTORY = "/Users/dillonblake/Desktop/LAN-Server";
-	public static final String UTILITIES = DIRECTORY + "/utilities";
-	public static final String ACCOUNTS = UTILITIES + "/accounts";
-	public static final String SALT = UTILITIES + "/salt";
+	public static String DIRECTORY;
+	public static String UTILITIES;
+	public static String ACCOUNTS;
+	public static String SALT;
 	
 	private static ArrayList<Integer> usedPorts = new ArrayList<Integer>();
-	private static ArrayList<TwoWay> connections = new ArrayList<TwoWay>();
-	private static ServerConsole console = new ServerConsole();
+	private static Hashtable<String, TwoWay> connections = new Hashtable<String, TwoWay>();
+ 	private static ServerConsole console = new ServerConsole();
 	
-	private static String ip;
 	private static Hashtable accounts;
 	private static byte[] salt;
 	
@@ -40,6 +43,11 @@ public class RunServer {
 	 * @param String[] args
 	 */
 	public static void main(String[] args) {
+		changeDirectory();
+		UTILITIES = DIRECTORY + "/utilities";
+		ACCOUNTS = UTILITIES + "/accounts";
+		SALT = UTILITIES + "/salt";
+		
 		usedPorts.add(GETPORT);
 		usedPorts.add(SENDPORT);
 		
@@ -73,19 +81,33 @@ public class RunServer {
 		//ip listen loop
 		while(true) {
 			try {
+				//listen
 				ServerSocket getter = new ServerSocket(GETPORT);
 				Socket socketIn = getter.accept();
-				System.out.println("new client");
-				addMessage("New client at " + socketIn.getLocalAddress().toString());
 				DataInputStream streamIn = new DataInputStream(socketIn.getInputStream());
 				int length = streamIn.readInt();
 				byte[] dataIn = new byte[length];
 				streamIn.readFully(dataIn,0,length);
-				ip = new String(dataIn);
+				String input = new String(dataIn);
 				streamIn.close();
 				socketIn.close();
 				getter.close();
-				addConnection(ip);
+				
+				//check for type of request
+				if(input.contains("dis")) {
+					//disconnect
+					String ip = input.split("-")[0];
+					connections.get(ip).disconnect();
+					connections.remove(ip);
+				}else {
+					//connect
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							addMessage("New client at " + input);
+						}//end run
+					});//end Runnable
+					addConnection(input);
+				}//end else
 			}catch(Exception e) {
 				System.out.println("Main Listener Error");
 			}//end catch
@@ -99,17 +121,17 @@ public class RunServer {
 	private static void addConnection(String ip) {
 		boolean continueSend = true;
 		while(continueSend)
-			continueSend = !send(salt);
+			continueSend = !send(ip, salt);
 		//get ports
 		int portIn = getPort();
 		int portOut = getPort();
 		//create a TwoWay
-		connections.add(new TwoWay(portIn, portOut, ip));
+		connections.put(ip, new TwoWay(portIn, portOut, ip));
 		//send ports to client
 		String ports = Integer.toString(portIn) + "-" + Integer.toString(portOut);
 		continueSend = true;
 		while(continueSend)
-			continueSend = !send(ports.getBytes());
+			continueSend = !send(ip, ports.getBytes());
 	}//end addConnection
 	
 	/*
@@ -157,8 +179,9 @@ public class RunServer {
 	/*
 	 * Sends a byte message to connection ip on out
 	 * @param byte[] msg: The message to be sent in bytes
+	 * @return boolean: If send was success or not
 	 */
-	private static boolean send(byte[] msg) {
+	private static boolean send(String ip, byte[] msg) {
 		try {
 			Socket socket = new Socket(ip, SENDPORT);
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -170,7 +193,6 @@ public class RunServer {
 			while(!d.delay());
 			return true;
 		}catch(Exception e) {
-			System.out.println(e.getMessage());
 			return false;
 		}//end try
 	}//end sendToServer
@@ -224,5 +246,30 @@ public class RunServer {
 	public static void addMessage(String txt) {
 		console.updateText(txt);
 	}//end addMessage
+	
+	/*
+	 * Change the directory of server
+	 */
+	private static void changeDirectory() {
+		//file chooser
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+			@Override
+			public void run() {
+				JFileChooser chooser = new JFileChooser();
+				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				chooser.setDialogTitle("Please Select The Server Folder");
+				int result = chooser.showOpenDialog(null);
+				if(result == JFileChooser.APPROVE_OPTION) {
+					DIRECTORY = chooser.getSelectedFile().getAbsolutePath();
+				}else {
+					System.exit(0);
+				}//end else
+			}//end run
+			});//end Runnable
+		} catch (Exception e) {
+			System.exit(0);
+		}//end catch
+	}//end changeDirectory
 	
 }//end RunServer

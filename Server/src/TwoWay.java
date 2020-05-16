@@ -1,23 +1,24 @@
-import java.io.DataInputStream;
+/*
+ * This is the class for a two way connection with a client.
+ * Each client gets an instance of this class.
+ * There is and input and and output port.
+ * Each TwoWay is ran on it's own thread on and infinite loop, if the password is correct.
+ */
+
+import java.awt.EventQueue;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Random;
 import java.util.Set;
 
 public class TwoWay extends Thread{
-	
-	private final int OK = 200;
-	private final int ERROR = 404;
 	
 	private int portIn, portOut;
 	private String ip, username;
@@ -26,6 +27,12 @@ public class TwoWay extends Thread{
 	private Hashtable<Integer, byte[]> names;
 	private boolean verified;
 	
+	/*
+	 * Constructor for a two way connection
+	 * @param int i: The input port
+	 * @param int o: The output port
+	 * @param String addr: The ip of client
+	 */
 	public TwoWay(int i, int o, String addr) {
 		names = new Hashtable<Integer, byte[]>();
 		portIn = i;
@@ -37,6 +44,8 @@ public class TwoWay extends Thread{
 	
 	/*
 	 * This method is called when the thread is started
+	 * First, it checks the username and password
+	 * Then, it moves to a listen loop awaiting commands
 	 */
 	public void run() {
 		//get username and password
@@ -54,16 +63,14 @@ public class TwoWay extends Thread{
 		//record the info
 		username = new String(listIn.get(0));
 		byte[] hash = listIn.get(1);
-		System.out.println(username);
-		System.out.println(new String(hash));
 		
 		//check account to login
 		verified = false;
 	
-		Dictionary accounts = RunServer.getAccounts();
+		Hashtable accounts = RunServer.getAccounts();
 		byte[] passOnFile = (byte[]) accounts.get(username);
 		if(passOnFile == null){
-			System.out.println("new account");
+			//new account
 			verified = true;
 			
 			//add account and server
@@ -76,6 +83,7 @@ public class TwoWay extends Thread{
 			
 			//end the account creation process
 		}else if(new String(passOnFile).equals(new String(hash))) {
+			//password verified
 			verified = true;
 			//open the names
 			File nameFile = new File(RunServer.UTILITIES + "/names-" + username);
@@ -88,7 +96,9 @@ public class TwoWay extends Thread{
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
+			//end the login for old account
 		}else {
+			//if the password is not verified
 			verified = false;
 		}//end else
 
@@ -97,6 +107,13 @@ public class TwoWay extends Thread{
 			send("verified".getBytes());
 		else
 			send("rejected".getBytes());
+		
+		//send status to console
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				RunServer.addMessage(ip + " Verified: " + verified);
+			}//end run
+		});//end Runnable
 		
 		//main loop of listener
 		while(verified) {
@@ -121,8 +138,6 @@ public class TwoWay extends Thread{
 				sync(portCount);
 			}else if(command.equals("pull")) {
 				pull();
-			}else if(command.equals("disconnect")) {
-				disconnect();
 			}//end if
 		}//end while verified
 	}//end run
@@ -130,7 +145,7 @@ public class TwoWay extends Thread{
 	/*
 	 * Save the names to file
 	 */
-	private void saveNames() {
+	public void saveNames() {
 		File nameFile = new File(RunServer.UTILITIES + "/names-" + username);
 		try {
 			FileOutputStream outStream = new FileOutputStream(nameFile);
@@ -146,8 +161,9 @@ public class TwoWay extends Thread{
 	/*
 	 * Sends a byte message to connection ip on out
 	 * @param byte[] msg: The message to be sent in bytes
+	 * @return boolean: Whether or not send was successful
 	 */
-	private void send(byte[] msg) {
+	private boolean send(byte[] msg) {
 		try {
 			Socket socket = new Socket(ip, portOut);
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -156,9 +172,10 @@ public class TwoWay extends Thread{
 			out.close();
 			socket.close();
 			sleep(50);
+			return true;
 		}catch(Exception e) {
-			e.printStackTrace();
-		}//end try
+			return false;
+		}//end catch
 	}//end sendToServer
 	
 	private int getNewID() {
@@ -177,6 +194,13 @@ public class TwoWay extends Thread{
 	 * This method is used to sync the user's files to the system
 	 */
 	private void sync(int count) {
+		//write to console
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				RunServer.addMessage(ip + " Syncing...");
+			}//end run
+		});//end Runnable
+		
 		//data storage
 		usedIds  = new ArrayList<Integer>();
 		ArrayList<Integer> sendPorts = new ArrayList<Integer>();
@@ -207,7 +231,9 @@ public class TwoWay extends Thread{
 		}//end for
 		
 		//send the ports
-		send(ports.getBytes());
+		boolean continueSend = true;
+		while(continueSend)
+			continueSend = !send(ports.getBytes());
 		
 		//wait for completion
 		boolean wait = true;
@@ -218,18 +244,19 @@ public class TwoWay extends Thread{
 					wait = true;
 		}//end while
 		
-		System.out.println("byte: ");
-		System.out.println(names.get(usedIds.get(0)));
-		
-		//write hash to file
-		saveNames();
-		
 	}//end sync
 	
 	/*
 	 * This method sends the files back to the client
 	 */
 	private void pull() {
+		//write to console
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				RunServer.addMessage(ip + " Pulling...");
+			}//end run
+		});//end Runnable
+		
 		//get files
 		ArrayList<FileHandler> handlers = new ArrayList<FileHandler>();
 		Set<Integer> idSet = names.keySet();
@@ -252,7 +279,9 @@ public class TwoWay extends Thread{
 		}//end for
 		
 		//send port
-		send(ports.getBytes());
+		boolean continueSend = true;
+		while(continueSend)
+			continueSend = !send(ports.getBytes());
 	}//end pull
 	
 	/*
@@ -270,23 +299,29 @@ public class TwoWay extends Thread{
 	 * @return byte[] name: the name in bytes
 	 */
 	public byte[] getName(int id) {
-		System.out.println("called");
 		return names.get(id);
 	}//end getName
 	
 	/*
 	 * Disconnects and destroys this TwoWay
 	 */
-	private void disconnect() {
-		System.out.println("disconnect");
+	public void disconnect() {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				RunServer.addMessage(ip + " Disconnected");
+			}//end run
+		});//end Runnable
 		RunServer.removePort(portIn);
 		RunServer.removePort(portOut);
 		verified = false;
-		try {
-			finalize();
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}//end catch
 	}//end disconnect
+	
+	/*
+	 * Get the ip of client
+	 * @return String ip: The ip address
+	 */
+	public String getIP() {
+		return ip;
+	}//end getIP
 	
 }//end TwoWay

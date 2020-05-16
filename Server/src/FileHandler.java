@@ -7,6 +7,7 @@
  * For outgoing files, the file name for the ID is sent and the compressed and encrypted data for the ID is sent.
  */
 
+import java.awt.EventQueue;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -89,9 +90,6 @@ public class FileHandler extends Thread{
 		byte[] fileName = listIn.get(0);
 		byte[] data = listIn.get(1);
 		
-		//add name to hash
-		conn.addName(id, fileName);
-		
 		//write file
 		File file = new File(RunServer.DIRECTORY + "/" + username + "/" + id);
 		try {
@@ -103,9 +101,16 @@ public class FileHandler extends Thread{
 		}
 		
 		//finish
-		RunServer.removePort(port);
-		System.out.println("File received from " + ip + ": " + id);
-		RunServer.addMessage("File received from " + ip + ": " + id);
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				//add name to hash
+				conn.addName(id, fileName);
+				conn.saveNames();
+				//end it
+				RunServer.removePort(port);
+				RunServer.addMessage("File received from " + conn.getIP() + ": " + id);
+			}//end run
+		});//end Runnable
 		complete = true;
 		
 	}//end catcher
@@ -113,7 +118,7 @@ public class FileHandler extends Thread{
 	/*
 	 * This method sends the stored files back to the client
 	 */
-	public void sender() {
+	private void sender() {
 		byte[] name = conn.getName(id);
 		
 		//send name
@@ -138,9 +143,12 @@ public class FileHandler extends Thread{
 		}//end while
 		
 		//finish
-		RunServer.removePort(port);
-		System.out.println("File sent to " + ip + " from: " + id);
-		RunServer.addMessage("File sent to " + ip + " from: " + id);
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {	
+				RunServer.removePort(port);
+				RunServer.addMessage("File sent to " + conn.getIP() + " from: " + id);
+			}//end run
+		});//end Runnable
 		complete = true;
 		
 	}//end sender
@@ -148,8 +156,9 @@ public class FileHandler extends Thread{
 	/*
 	 * Sends a byte message to connection ip on out
 	 * @param byte[] msg: The message to be sent in bytes
+	 * @return boolean: Whether or not the send was successful
 	 */
-	public boolean send(byte[] msg) {
+	private boolean send(byte[] msg) {
 		try {
 			Socket socket = new Socket(ip, port);
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -160,9 +169,8 @@ public class FileHandler extends Thread{
 			sleep(50);
 			return true;
 		}catch(Exception e) {
-			//e.printStackTrace();
 			return false;
-		}//end try
+		}//end catch
 	}//end sendToServer
 	
 	/*
