@@ -1,4 +1,4 @@
-/*
+/**
  * This is the class for the login window.
  * When an instance is created, a window will appear to collect a usernmae and password.
  * Once the sign in button is clicked, the login method in the ClientTwoWay is called
@@ -26,7 +26,7 @@ public class Login extends JFrame implements ActionListener{
 	private JTextField userFld;
 	private JButton loginBtn;
 	
-	/*
+	/**
 	 * Constructor sets up the frame
 	 */
 	public Login() {
@@ -64,9 +64,9 @@ public class Login extends JFrame implements ActionListener{
 	}
 
 	@Override
-	/*
+	/**
 	 * Listens for a button click and then calls login for the ClientTwoWay created in Client.
-	 * @param: ActionEvent e: The event from the JButton
+	 * @param: e the event from the JButton
 	 */
 	public void actionPerformed(ActionEvent e) {
 		

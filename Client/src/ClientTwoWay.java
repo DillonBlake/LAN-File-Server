@@ -1,4 +1,4 @@
-/*
+/**
  * This is the two way connection with the server.
  * There are two ports to talk to the server. First, the login is handled. 
  * Passwords are sent to the server using the MD5 hash algorithm.
@@ -25,20 +25,27 @@ import javax.swing.JFileChooser;
 public class ClientTwoWay {
 	
 	private int portIn, portOut;
-	private String ip, username;
+	private String ip, username, slash;
 	private SecretKey key;
 	private byte[] salt;
 	private Listener listen;
 	private Console console;
 	private Delay delay;
 	
-	/*
+	/**
 	 * This is the constructor to setup the two way. It starts the login
-	 * @param int i: the in port
-	 * @param int o: the out port
-	 * @param String addr: the ip to send to
+	 * @param i the in port
+	 * @param o the out port
+	 * @param addr the ip to send to
 	 */
 	public ClientTwoWay(int i, int o, String addr) {
+		//check os
+		String os = System.getProperty("os.name").toLowerCase();
+		if(os.contains("windows"))
+			slash = "\\";
+		else
+			slash = "/";
+		//setup
 		portIn = i;
 		portOut = o;
 		ip = addr;
@@ -53,10 +60,10 @@ public class ClientTwoWay {
 		new Login();
 	}//end constructor
 	
-	/*
+	/**
 	 * This method logs into the server with a username and password
-	 * @param String u: the username
-	 * @param Srting p: the password
+	 * @param u the username
+	 * @param p the password
 	 */
 	public void login(String u, String p) {
 		console.setVisible(true);
@@ -68,7 +75,7 @@ public class ClientTwoWay {
 	        SecretKey temp = factory.generateSecret(spec);
 	        key = new SecretKeySpec(temp.getEncoded(), "AES"); 
 		}catch(Exception e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}//end catch
 		
 		//send account info
@@ -105,10 +112,10 @@ public class ClientTwoWay {
 	}//end login
 	
 	
-	/*
+	/**
 	 * Sends a byte message to connection ip on out
-	 * @param byte[] msg: The message to be sent in bytes
-	 * @return boolean sent: if the message was successfully sent
+	 * @param msg the message to be sent in bytes
+	 * @return if the message was successfully sent
 	 */
 	private boolean send(byte[] msg) {
 		try {
@@ -125,7 +132,7 @@ public class ClientTwoWay {
 		}//end try
 	}//end sendToServer
 	
-	/*
+	/**
 	 * This is the sync method.
 	 * The client requests the server for a sync and listens for the pipe ports.
 	 * A pipe is opened for each file in the sync folder.
@@ -146,7 +153,6 @@ public class ClientTwoWay {
 	            return true;
 	        }
 	    });//end the filter
-		System.out.println("files got");
 		
 		//request a sync and listen for ports
 		listen.clear();
@@ -154,7 +160,6 @@ public class ClientTwoWay {
 		boolean continueSend = true;
 		while(continueSend)
 			continueSend = !send(msg.getBytes());
-		System.out.println("sent");
 		int length = 0;
 		ArrayList<byte[]> listIn = new ArrayList<byte[]>();
 		while(length != 1) {
@@ -163,7 +168,6 @@ public class ClientTwoWay {
 			while(!delay.delay());
 		}//end listen loop
 		String[] ports = new String(listIn.get(0)).split("-");
-		System.out.println("response got");
 		
 		//open pipes
 		ArrayList<Pipe> pipes= new ArrayList<Pipe>();
@@ -172,7 +176,6 @@ public class ClientTwoWay {
 			int port = Integer.parseInt(ports[i]);
 			pipes.add(new Pipe(dir, port, ip, key));
 		}//end for file
-		System.out.println("pipes open");
 		
 		ArrayList<Pipe> completed = new ArrayList<Pipe>();
 		while(completed.size() != pipes.size())
@@ -186,6 +189,12 @@ public class ClientTwoWay {
 		console.update("Sync Complete");
 	}//end sync
 	
+	/**
+	 * This method pulls the files from the server via Pipes.
+	 * First, a location is chosen.
+	 * Then, the Pipes are opened.
+	 * Then, it waits for the Pipes to be done
+	 */
 	public void pull() {
 		console.update("Pulling files from server");
 		
@@ -210,7 +219,7 @@ public class ClientTwoWay {
 		} //end catch
 		//make folder
 		String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-		File folder = new File(choice + "/pull-" + timeStamp.replace(" ", "-"));
+		File folder = new File(choice + slash + "pull-" + timeStamp.replace(" ", "-"));
 		folder.mkdir();
 		
 		//make pull request
@@ -235,7 +244,7 @@ public class ClientTwoWay {
 			try {
 				pipes.add(new Pipe(Integer.parseInt(ports[i]), ip, key, folder.getAbsolutePath()));
 			} catch (Exception e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 			}//end catch
 		}//end for
 		
@@ -252,7 +261,7 @@ public class ClientTwoWay {
 		
 	}//end pull
 	
-	/*
+	/**
 	 * Disconnects from server
 	 */
 	public void disconnect() {
@@ -269,9 +278,9 @@ public class ClientTwoWay {
 		}//end catch
 	}//end disconnect
 	
-	/*
+	/**
 	 * Gets the console object
-	 * @return Console
+	 * @return The console frame
 	 */
 	public Console getConsole() {
 		return console;

@@ -1,4 +1,4 @@
-/*
+/**
  * This class is the console frame for the client side.
  * It is a child of the JFrame class and it implements WindowListener to handle exits.
  * It adds a Buttons object and an OutputWin object to the frame
@@ -20,7 +20,7 @@ public class Console extends JFrame implements WindowListener{
 	private JPanel panel;
 	private OutputWin output;
 	
-	/*
+	/**
 	 * The constructor for Console. This creates the JFrame.
 	 */
 	public Console() {
@@ -49,9 +49,9 @@ public class Console extends JFrame implements WindowListener{
 		setVisible(true);
 	}//end constructor
 	
-	/*
+	/**
 	 * Update the console with additional text
-	 * @param String msg: The message to add
+	 * @param msg the message to add
 	 */
 	public void update(String msg) {
 		output.addOutput(msg);
@@ -63,10 +63,10 @@ public class Console extends JFrame implements WindowListener{
 	}
 
 	@Override
-	/*
+	/**
 	 * This overrides the windowClosing method so that when the window is closed, 
 	 * the user is prompted as to whether or not they want to disconnect.
-	 * @param WindowEvent e: The WindowEvent that has occurred
+	 * @param e the WindowEvent that has occurred
 	 */
 	public void windowClosing(WindowEvent e) {
 		SwingUtilities.invokeLater(new Runnable() {

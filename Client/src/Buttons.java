@@ -1,4 +1,4 @@
-/*
+/**
  * This class manages the button grid for the console.
  * It is a child of the JPanel class
  * The ActionListener is implemented as well
@@ -24,7 +24,7 @@ public class Buttons extends JPanel implements ActionListener{
 	private GridLayout grid;
 	private BackgroundSyncer syncer;
 
-	/*
+	/**
 	 * The constructor for Buttons. This sets up the button grid.
 	 */
 	public Buttons() {
@@ -75,7 +75,7 @@ public class Buttons extends JPanel implements ActionListener{
 		
 	}//end actionPerformed
 	
-	/*
+	/**
 	 * This method changes the background sync settings
 	 */
 	public void toggleSync() {
@@ -96,10 +96,17 @@ public class Buttons extends JPanel implements ActionListener{
 		});//end Runnable
 	}//end toggleSync
 	
-	/*
+	/**
 	 * Change server folder directly with a file chooser
 	 */
 	private static void changeDirectory() {
+		//check os
+		String slash;
+		String os = System.getProperty("os.name").toLowerCase();
+		if(os.contains("windows"))
+			slash = "\\";
+		else
+			slash = "/";
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				//file chooser
@@ -110,9 +117,9 @@ public class Buttons extends JPanel implements ActionListener{
 					int result = chooser.showOpenDialog(null);
 					if(result == JFileChooser.APPROVE_OPTION) {
 						Client.mainDir = chooser.getSelectedFile().getAbsolutePath();
-						Client.utilitiesDir = Client.mainDir + "/Utility";
-						Client.keyDir = Client.utilitiesDir + "/key";
-						Client.tempDir = Client.utilitiesDir + "/temp";
+						Client.utilitiesDir = Client.mainDir + slash + "Utility";
+						Client.keyDir = Client.utilitiesDir + slash + "key";
+						Client.tempDir = Client.utilitiesDir + slash + "temp";
 						Client.getTwoWay().getConsole().update("Sync Location Changed To:\n" + Client.mainDir);
 					}else {
 						//no else

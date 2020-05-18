@@ -1,4 +1,4 @@
-/*
+/**
  * This is class contains the main method for the client side program.
  * When this is ran, the ip address of the client is sent on the main input line to the server.
  * The server will then respond with two ports to create a two way connection with.
@@ -18,17 +18,23 @@ public class Client{
     public static final int SENDPORT = 5000;
     public static final int GETPORT = 5001;
     
-    public static String mainDir, utilitiesDir, keyDir, tempDir, ip;
+    public static String mainDir, utilitiesDir, keyDir, tempDir, ip, slash;
     public static int portIn, portOut;
     
     private static ClientTwoWay twoWay;
     private static byte[] salt = null;
     
-    /*
+    /**
      * The main method sets up the ClientTwoWay
-     * @param String[] args
+     * @param args The arguments passed when main is called
      */
 	public static void main(String args[]) {
+		//check os
+		String os = System.getProperty("os.name").toLowerCase();
+		if(os.contains("windows"))
+			slash = "\\";
+		else
+			slash = "/";
 		
 		//setup directories
 		changeDirectory();
@@ -80,10 +86,10 @@ public class Client{
 		
 	}//end main
 	
-	/*
+	/**
 	 * Sends a byte message to connection ip on out
-	 * @param byte[] msg: The message to be sent in bytes
-	 * @return boolean sent: true if sent successfully, false if failed
+	 * @param msg the message to be sent in bytes
+	 * @return true if sent successfully, false if failed
 	 */
 	public static boolean send(byte[] msg) {
 		try {
@@ -101,18 +107,17 @@ public class Client{
 		}//end try
 	}//end sendToServer
 	
-	/*
+	/**
 	 * Get the salt sent from server
-	 * @return byte[] salt: The salt sent from server
+	 * @return the salt sent from server
 	 */
 	public static byte[] getSalt() {
 		return salt;
 	}//end getSalt
 	
-	/*
+	/**
 	 * Shows a message box for an error
-	 * @param String txt: The text to show
-	 * 
+	 * @param txt the text to show
 	 */
 	public static void throwError(String txt) {
 		try {
@@ -127,7 +132,7 @@ public class Client{
 		}//end catch
 	}//end throwError
 	
-	/*
+	/**
 	 * Shows a message box for a connection error
 	 */
 	public static void throwError() {
@@ -136,15 +141,15 @@ public class Client{
 			twoWay.disconnect();
 	}//end throwError
 	
-	/*
+	/**
 	 * Get the TwoWay
-	 * @return ClientTwoWay
+	 * @return the two way connection with the server
 	 */
 	public static ClientTwoWay getTwoWay() {
 		return twoWay;
 	}//end getTwoWay
 	
-	/*
+	/**
 	 * Change server folder directly with a file chooser
 	 */
 	private static void changeDirectory() {
@@ -164,9 +169,9 @@ public class Client{
 					}else {
 						System.out.println(mainDir);
 					}//end else
-					utilitiesDir = mainDir + "/Utility";
-					keyDir = utilitiesDir + "/key";
-					tempDir = utilitiesDir + "/temp";
+					utilitiesDir = mainDir + slash + "Utility";
+					keyDir = utilitiesDir + slash + "key";
+					tempDir = utilitiesDir + slash + "temp";
 				}else {
 					System.exit(0);
 				}//end else

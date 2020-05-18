@@ -1,4 +1,4 @@
-/*
+/**
  * This class runs a background task to sync on a given time interval
  */
 
@@ -7,7 +7,7 @@ public class BackgroundSyncer extends Thread{
 	private boolean sync;
 	private int sleepTime = 60 * 10 * 1000; //set to 10 minutes
 	
-	/*
+	/**
 	 * Constructor sets up the syncer. It will not sync until enabled
 	 */
 	public BackgroundSyncer() {
@@ -15,7 +15,7 @@ public class BackgroundSyncer extends Thread{
 		start();
 	}//end constructor
 	
-	/*
+	/**
 	 * The run method for the thread
 	 */
 	public void run() {
@@ -38,14 +38,14 @@ public class BackgroundSyncer extends Thread{
 		}//end run loop
 	}//end run
 
-	/*
+	/**
 	 * Enable the background sync
 	 */
 	public void enable() {
 		sync = true;
 	}//end enable
 	
-	/*
+	/**
 	 * Disable the background sync
 	 */
 	public void disable() {

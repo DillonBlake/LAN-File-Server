@@ -1,4 +1,4 @@
-/*
+/**
  * This class is used to listen for messages on a port.
  * It collects the messages in an ArrayList which can be read and reset by another class.
  * The Listener class is ran on a thread.
@@ -16,9 +16,9 @@ public class Listener extends Thread{
 	private int port;
 	private ArrayList<byte[]> messages;
 	
-	/*
+	/**
 	 * The constructor for the Listener
-	 * @param int p: The port that is to be listened on
+	 * @param p the port that is to be listened on
 	 */
 	public Listener(int p) {
 		port = p;
@@ -26,7 +26,7 @@ public class Listener extends Thread{
 		start();
 	}//end constructor
 	
-	/*
+	/**
 	 * Ran when thread is started.
 	 * This has a never ending loop of listening for input from the given port.
 	 */
@@ -46,31 +46,28 @@ public class Listener extends Thread{
 				server.close();
 				messages.add(data);
 			} catch (IOException e) {
-				//close program if there is a problem
-				JOptionPane.showMessageDialog(null, "Server Connection Error...Disconnecting");
-				Client.getTwoWay().disconnect();
-				System.exit(0);
+				System.out.println("listen error");
 			}//end catch
 		}//end loop
 	}//end run
 	
-	/*
+	/**
 	 * Returns the list of messages received
-	 * @return ArrayList<byte[]> for the messages received
+	 * @return a list of the messages received
 	 */
 	public ArrayList<byte[]> getMessages(){
 		return messages;
 	}//end getMessages
 	
-	/*
+	/**
 	 * Removes element from list of messages
-	 * @param byte[] b: The array of bytes to remove from list
+	 * @param b the array of bytes to remove from list
 	 */
 	public void removeElement(byte[] b) {
 		messages.remove(b);
 	}//end removeElement
 	
-	/*
+	/**
 	 * Resets the list of messages
 	 */
 	public void clear() {

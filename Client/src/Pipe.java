@@ -1,4 +1,4 @@
-/*
+/**
  * This class connects to the server to send or receive files
  * It handles the encryption/ decryption process and the compression/decompression.
  * The Advanced Encryption Standard is used and the Deflater class at default compression level is used.
@@ -21,17 +21,17 @@ import javax.crypto.SecretKey;
 public class Pipe extends Thread{
 
 	public static final String ALG = "AES";
-	private String url, address, fileLocation, fileName;
+	private String url, address, fileLocation, fileName, slash;
 	private boolean complete;
 	private int mode, port;
 	private SecretKey key;
 	
-	/*
+	/**
 	 * The constructor to send a file
-	 * @param String url: The file directory
-	 * @param int p: The port to send on
-	 * @param String sendTo: The ip to send to
-	 * @param SecretKey key: The encryption key
+	 * @param url the file directory
+	 * @param p the port to send on
+	 * @param sendTo the ip to send to
+	 * @param key the encryption key
 	 */
 	public Pipe(String url, int p, String sendTo, SecretKey key) {
 		this.url = url;
@@ -43,12 +43,12 @@ public class Pipe extends Thread{
 		start();
 	}//end constructor
 	
-	/*
+	/**
 	 * The constructor to receive a file
-	 * @param int p: The port to listen on
-	 * @param String getFrom: The ip to that is sending the file
-	 * @param SecretKey key: The decryption key
-	 * @param String fLoc: The directory to story the file in
+	 * @param p the port to listen on
+	 * @param getFrom the ip to that is sending the file
+	 * @param key the decryption key
+	 * @param fLoc the directory to story the file in
 	 */
 	public Pipe(int p, String getFrom, SecretKey key, String fLoc) {
 		this.key = key;
@@ -60,11 +60,18 @@ public class Pipe extends Thread{
 		start();
 	}//end constructor
 	
-	/*
+	/**
 	 * The run method to be called by start()
 	 * Either sends or receives based on the mode
 	 */
 	public void run() {
+		//check os
+		String os = System.getProperty("os.name").toLowerCase();
+		if(os.contains("windows"))
+			slash = "\\";
+		else
+			slash = "/";
+		//check mode
 		if(mode == 0) {
 			sendFile();
 		}else if(mode == 1) {
@@ -72,10 +79,11 @@ public class Pipe extends Thread{
 		}
 	}//end run
 	
-	/*
+	/**
 	 * This trims the file name bytes. 
 	 * Extra bytes are added in the sending process and have to be removed
-	 * @param byte[] input: The string in bytes
+	 * @param input the string in bytes
+	 * @return the trimmed bytes
 	 */
 	public byte[] trim(byte[] input) {
 		byte[] trimmed = new byte[input.length - 2];
@@ -95,7 +103,7 @@ public class Pipe extends Thread{
 		return finalBytes;
 	}//end trim
 	
-	/*
+	/**
 	 * This method first receives and decrypts the name of the file.
 	 * Then, it received the file, decrypts it, and decompresses it.
 	 * Boolean complete is set to true at the end.
@@ -145,11 +153,10 @@ public class Pipe extends Thread{
 			fileData = baos.toByteArray();
 			
 			//write new file
-			File newFile = new File(fileLocation + "/" + name);
+			File newFile = new File(fileLocation + slash + name);
 			FileOutputStream fOut = new FileOutputStream(newFile);
 			fOut.write(fileData);
 			fOut.close();
-	
 			//set complete to true
 			complete = true;
 			
@@ -162,18 +169,24 @@ public class Pipe extends Thread{
 		
 	}//end receive
 	
-	/*
+	/**
 	 * This method encrypts the file name and then sends it over the socket. 
 	 * Then, the method compresses the file, encrypts it, and sends it as well.
 	 * Boolean complete is set to true at the end.
 	 */
 	public void sendFile() {
-		try {
+		try {		
 			//setup encryption
 			Cipher cipher = Cipher.getInstance(ALG);
 			
+			//check os
+			String os = System.getProperty("os.name").toLowerCase();
+			if(os.contains("windows"))
+				slash = "\\\\";
+			else
+				slash = "/";
 			//encrypt name
-			String[] split = url.split("/");
+			String[] split = url.split(slash);
 			String name = split[split.length - 1];
 			fileName = name;
 			byte[] secureName;
@@ -191,7 +204,6 @@ public class Pipe extends Thread{
 			//open and read original
 			File originalFile = new File(url);
 			FileInputStream fIn = new FileInputStream(originalFile);
-			System.out.println(originalFile.length());
 			byte[] originalData = new byte[(int)originalFile.length()];
 			fIn.read(originalData);
 			fIn.close();
@@ -234,9 +246,10 @@ public class Pipe extends Thread{
 		}//end catch
 	}//end send
 	
-	/*
+	/**
 	 * Sends a byte message to connection ip on out
-	 * @param byte[] msg: The message to be sent in bytes
+	 * @param msg the message to be sent in bytes
+	 * @return if the send was successful
 	 */
 	private boolean send(byte[] msg) {
 		try {
@@ -252,17 +265,17 @@ public class Pipe extends Thread{
 		}//end try
 	}//end sendToServer
 	
-	/*
+	/**
 	 * Checks if session is complete
-	 * @return boolean complete
+	 * @return if the task is complete
 	 */
 	public boolean isComplete() {
 		return complete;
 	}//end isComplete
 	
-	/*
+	/**
 	 * Returns name of file
-	 * @return String name
+	 * @return the name of the file
 	 */
 	public String getFileName() {
 		return fileName;
