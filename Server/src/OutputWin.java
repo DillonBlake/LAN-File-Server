@@ -1,4 +1,4 @@
-/*
+/**
  * This is the class that creates the text output for the console.
  * It is a child of ScrollPane.
  */
@@ -14,7 +14,7 @@ public class OutputWin extends ScrollPane {
 	private String textOut;
 	private JTextPane textPane;
 	
-	/*
+	/**
 	 * The constructor for OutputWin. This sets up the ScrollPane with JTextPane
 	 */
 	public OutputWin() {
@@ -38,9 +38,9 @@ public class OutputWin extends ScrollPane {
 		
 	}//end constructor
 	
-	/*
+	/**
 	 * This adds text to the text output.
-	 * @param String txt: The text to add
+	 * @param txt the text to add
 	 */
 	public void addOutput(String txt) {
 		SwingUtilities.invokeLater(new Runnable() {

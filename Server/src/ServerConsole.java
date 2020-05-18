@@ -1,4 +1,4 @@
-/*
+/**
  * This class creates a simple GUI to see what is going on with the server.
  */
 
@@ -10,7 +10,7 @@ public class ServerConsole extends JFrame{
 	private OutputWin textWin;
 	private GridLayout grid;
 	
-	/*
+	/**
 	 * The constructor for ServerConsole. The JFrame is setup and the OutputWin is added.
 	 */
 	public ServerConsole() {
@@ -29,9 +29,9 @@ public class ServerConsole extends JFrame{
 		setVisible(true);
 	}//end constructor
 	
-	/*
+	/**
 	 * Adds output to the console window
-	 * @param String txt: The text to add
+	 * @param txt the text to add
 	 */
 	public void updateText(String txt) {		
 		textWin.addOutput(txt);

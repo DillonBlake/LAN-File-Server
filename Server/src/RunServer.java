@@ -1,4 +1,4 @@
-/*
+/**
  * This class contains the main method for the server program.
  * This class listens for requests to establish a connection.
  * It then sends ports back to the client requesting and opens a TwoWay.
@@ -38,15 +38,24 @@ public class RunServer {
 	private static Hashtable accounts;
 	private static byte[] salt;
 	
-	/*
+	/**
 	 * The main method that listens for and establishes connections
-	 * @param String[] args
+	 * @param args passed when main is called
 	 */
 	public static void main(String[] args) {
+		//set directory
 		changeDirectory();
-		UTILITIES = DIRECTORY + "/utilities";
-		ACCOUNTS = UTILITIES + "/accounts";
-		SALT = UTILITIES + "/salt";
+		//check os
+		String os = System.getProperty("os.name").toLowerCase();
+		String slash;
+		if(os.contains("windows"))
+			slash = "\\";
+		else
+			slash = "/";
+		//set other directories
+		UTILITIES = DIRECTORY + slash +"utilities";
+		ACCOUNTS = UTILITIES + slash + "accounts";
+		SALT = UTILITIES + slash + "salt";
 		
 		usedPorts.add(GETPORT);
 		usedPorts.add(SENDPORT);
@@ -114,9 +123,9 @@ public class RunServer {
 		}//end while
 	}//end main
 	
-	/*
+	/**
 	 * Create a new TwoWay connection with client
-	 * @param String ip: Address of client
+	 * @param ip the address of client
 	 */
 	private static void addConnection(String ip) {
 		boolean continueSend = true;
@@ -134,7 +143,7 @@ public class RunServer {
 			continueSend = !send(ip, ports.getBytes());
 	}//end addConnection
 	
-	/*
+	/**
 	 * Find and open port
 	 * @return An integer port value
 	 */
@@ -152,10 +161,10 @@ public class RunServer {
 		return port;
 	}//end getPort
 	
-	/*
+	/**
 	 * Check if given port is open
-	 * @param int port: Port to check
-	 * @return boolean: True if open, false is closed
+	 * @param port the port to check
+	 * @return true if open, false is closed
 	 */
 	private static boolean isOpen(int port) {
 		try {
@@ -167,19 +176,19 @@ public class RunServer {
 		}//end catch
 	}//end isOpen
 	
-	/*
+	/**
 	 * Check if port is being used by this server
-	 * @param int port: Port to check
-	 * @return boolean: False if not used, true if being used
+	 * @param port the port to check
+	 * @return false if not used, true if being used
 	 */
 	private static boolean inUse(int port) {
 		return usedPorts.contains(port);
 	}//end inUse
 	
-	/*
+	/**
 	 * Sends a byte message to connection ip on out
-	 * @param byte[] msg: The message to be sent in bytes
-	 * @return boolean: If send was success or not
+	 * @param msg the message to be sent in bytes
+	 * @return if send was success or not
 	 */
 	private static boolean send(String ip, byte[] msg) {
 		try {
@@ -197,18 +206,18 @@ public class RunServer {
 		}//end try
 	}//end sendToServer
 	
-	/*
+	/**
 	 * Gets the user accounts
-	 * @return Dictionary of accounts
+	 * @return the accounts Hashtable
 	 */
 	public static Hashtable getAccounts() {
 		return accounts;
 	}//end getAccounts
 	
-	/*
+	/**
 	 * add a username and password to account file
-	 * @param String user: The username to add
-	 * @param byte[] pass: The password to add
+	 * @param user the username to add
+	 * @param pass the password to add
 	 */
 	public static void addAccount(String user, byte[] pass) {
 		accounts.put(user, pass);
@@ -224,30 +233,31 @@ public class RunServer {
 		}//end catch
 	}//end addAccount
 	
-	/*
+	/**
 	 * Returns the salt for password hashing
-	 * @return byte[] salt: The salt bytes from file
+	 * @return salt the salt bytes from file
 	 */
 	public static byte[] getSalt() {
 		return salt;
 	}//end getSalt
 	
-	/*
+	/**
 	 * Removes the port from use
+	 * @param port the port to be removed
 	 */
 	public static void removePort(int port) {
 		usedPorts.add(new Integer(port));
 	}//end removePort
 	
-	/*
+	/**
 	 * Add message to console
-	 * @param String txt: The message to add
+	 * @param txt the message to add
 	 */
 	public static void addMessage(String txt) {
 		console.updateText(txt);
 	}//end addMessage
 	
-	/*
+	/**
 	 * Change the directory of server
 	 */
 	private static void changeDirectory() {

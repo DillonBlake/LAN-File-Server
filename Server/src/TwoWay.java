@@ -1,4 +1,4 @@
-/*
+/**
  * This is the class for a two way connection with a client.
  * Each client gets an instance of this class.
  * There is and input and and output port.
@@ -21,17 +21,17 @@ import java.util.Set;
 public class TwoWay extends Thread{
 	
 	private int portIn, portOut;
-	private String ip, username;
+	private String ip, username, slash;
 	private Listener listen;
 	private ArrayList<Integer> usedIds;
 	private Hashtable<Integer, byte[]> names;
 	private boolean verified;
 	
-	/*
+	/**
 	 * Constructor for a two way connection
-	 * @param int i: The input port
-	 * @param int o: The output port
-	 * @param String addr: The ip of client
+	 * @param i the input port
+	 * @param o the output port
+	 * @param addr the ip of client
 	 */
 	public TwoWay(int i, int o, String addr) {
 		names = new Hashtable<Integer, byte[]>();
@@ -42,19 +42,27 @@ public class TwoWay extends Thread{
 		start();
 	}//end constructor
 	
-	/*
+	/**
 	 * This method is called when the thread is started
 	 * First, it checks the username and password
 	 * Then, it moves to a listen loop awaiting commands
 	 */
 	public void run() {
+		//check os
+		String os = System.getProperty("os.name").toLowerCase();
+		if(os.contains("windows"))
+			slash = "\\";
+		else
+			slash = "/";
+			
 		//get username and password
 		int listLength = 0;
 		ArrayList<byte[]> listIn = null;
 		while(listLength != 2) {
 			listIn = listen.getMessages();
 			listLength = listIn.size();
-			System.out.print("");
+			Delay d = new Delay();
+			while(!d.delay());
 		}//end while
 		
 		//clear listen
@@ -75,7 +83,7 @@ public class TwoWay extends Thread{
 			
 			//add account and server
 			RunServer.addAccount(username, hash);
-			File newFolder = new File(RunServer.DIRECTORY + "/" + username);
+			File newFolder = new File(RunServer.DIRECTORY + slash + username);
 			newFolder.mkdir();
 			
 			//save names file
@@ -86,7 +94,7 @@ public class TwoWay extends Thread{
 			//password verified
 			verified = true;
 			//open the names
-			File nameFile = new File(RunServer.UTILITIES + "/names-" + username);
+			File nameFile = new File(RunServer.UTILITIES + slash + "names-" + username);
 			try {
 				FileInputStream inStream = new FileInputStream(nameFile);
 				ObjectInputStream objectIn = new ObjectInputStream(inStream);
@@ -142,11 +150,11 @@ public class TwoWay extends Thread{
 		}//end while verified
 	}//end run
 	
-	/*
+	/**
 	 * Save the names to file
 	 */
 	public void saveNames() {
-		File nameFile = new File(RunServer.UTILITIES + "/names-" + username);
+		File nameFile = new File(RunServer.UTILITIES + slash + "names-" + username);
 		try {
 			FileOutputStream outStream = new FileOutputStream(nameFile);
 			ObjectOutputStream objectOut = new ObjectOutputStream(outStream);
@@ -158,10 +166,10 @@ public class TwoWay extends Thread{
 		}//end catch
 	}//end saveNames
 	
-	/*
+	/**
 	 * Sends a byte message to connection ip on out
-	 * @param byte[] msg: The message to be sent in bytes
-	 * @return boolean: Whether or not send was successful
+	 * @param msg the message to be sent in bytes
+	 * @return whether or not send was successful
 	 */
 	private boolean send(byte[] msg) {
 		try {
@@ -190,7 +198,7 @@ public class TwoWay extends Thread{
 		return id;
 	}//end getNewID
 	
-	/*
+	/**
 	 * This method is used to sync the user's files to the system
 	 */
 	private void sync(int count) {
@@ -213,11 +221,11 @@ public class TwoWay extends Thread{
 		}//end adding
 		
 		//delete old files
-		String userPath = RunServer.DIRECTORY + "/" + username;
+		String userPath = RunServer.DIRECTORY + slash + username;
 		File userFile = new File(userPath);
 		String[] files = userFile.list();
 		for(String file: files) {
-			File toDelete = new File(userPath + "/" + file);
+			File toDelete = new File(userPath + slash + file);
 			toDelete.delete();
 		}//end deleting
 		
@@ -246,7 +254,7 @@ public class TwoWay extends Thread{
 		
 	}//end sync
 	
-	/*
+	/**
 	 * This method sends the files back to the client
 	 */
 	private void pull() {
@@ -284,25 +292,25 @@ public class TwoWay extends Thread{
 			continueSend = !send(ports.getBytes());
 	}//end pull
 	
-	/*
+	/**
 	 * Adds name to name file
-	 * @param int id: the id of name
-	 * @param byte[] name: the name in bytes
+	 * @param id the id of name
+	 * @param name the name in bytes
 	 */
 	public void addName(int id, byte[] name) {
 		names.put(new Integer(id), name);
 	}//end add name
 	
-	/*
+	/**
 	 * Get name from id
-	 * @param int id: The id to search for
-	 * @return byte[] name: the name in bytes
+	 * @param id the id to search for
+	 * @return the name in bytes
 	 */
 	public byte[] getName(int id) {
 		return names.get(id);
 	}//end getName
 	
-	/*
+	/**
 	 * Disconnects and destroys this TwoWay
 	 */
 	public void disconnect() {
@@ -316,9 +324,9 @@ public class TwoWay extends Thread{
 		verified = false;
 	}//end disconnect
 	
-	/*
+	/**
 	 * Get the ip of client
-	 * @return String ip: The ip address
+	 * @return the ip address
 	 */
 	public String getIP() {
 		return ip;
