@@ -94,17 +94,7 @@ public class TwoWay extends Thread{
 			//password verified
 			verified = true;
 			//open the names
-			File nameFile = new File(RunServer.UTILITIES + slash + "names-" + username);
-			try {
-				FileInputStream inStream = new FileInputStream(nameFile);
-				ObjectInputStream objectIn = new ObjectInputStream(inStream);
-				names = (Hashtable)objectIn.readObject();
-				objectIn.close();
-				inStream.close();
-			}catch(Exception e) {
-				e.printStackTrace();
-			}
-			//end the login for old account
+			openNames();
 		}else {
 			//if the password is not verified
 			verified = false;
@@ -265,6 +255,9 @@ public class TwoWay extends Thread{
 			}//end run
 		});//end Runnable
 		
+		//open names
+		openNames();
+		
 		//get files
 		ArrayList<FileHandler> handlers = new ArrayList<FileHandler>();
 		Set<Integer> idSet = names.keySet();
@@ -309,6 +302,23 @@ public class TwoWay extends Thread{
 	public byte[] getName(int id) {
 		return names.get(id);
 	}//end getName
+	
+	/**
+	 * Opens up the names file to get the most recent Hashtable of names
+	 */
+	private void openNames() {
+		File nameFile = new File(RunServer.UTILITIES + slash + "names-" + username);
+		try {
+			FileInputStream inStream = new FileInputStream(nameFile);
+			ObjectInputStream objectIn = new ObjectInputStream(inStream);
+			names = (Hashtable)objectIn.readObject();
+			objectIn.close();
+			inStream.close();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		//end the login for old account
+	}//end openNames
 	
 	/**
 	 * Disconnects and destroys this TwoWay
