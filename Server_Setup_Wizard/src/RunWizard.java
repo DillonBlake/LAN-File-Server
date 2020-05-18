@@ -1,5 +1,4 @@
-
-/*
+/**
  * This program is a simple setup wizard.
  * It asks the user where they want to setup their server then creates the file structure.
  * Then, the file url is output for the user to copy.
@@ -16,9 +15,20 @@ import javax.swing.JOptionPane;
 
 public class RunWizard {
 	
-	private String directory;
+	private static String slash;
 	
+	/**
+	 * The main method creates the file structure
+	 * @param args the parameters passed when main is called
+	 */
 	public static void main(String[] args) {
+		//check os
+		String os = System.getProperty("os.name").toLowerCase();
+		if(os.contains("windows"))
+			slash = "\\";
+		else
+			slash = "/";
+				
 		//intro
 		JOptionPane.showMessageDialog(null, "Welcome to the local network server setup wizard.\n"
 				+ "This program is used to setup the file structure on the server side.\n"
@@ -48,17 +58,17 @@ public class RunWizard {
 		
 	}//end main
 	
-	/*
+	/**
 	 * This method performs the setup
-	 * @param File file: The file chosen from the chooser
+	 * @param file the File chosen from the chooser
 	 */
 	public static void setup(File file) {
 		//setup paths
 		String url = file.getAbsolutePath();
-		String mainFolder = url + "/LAN-Server";
-		String utilities = mainFolder + "/utilities";
-		String accounts = utilities + "/accounts";
-		String salt = utilities + "/salt";
+		String mainFolder = url + slash + "LAN-Server";
+		String utilities = mainFolder + slash + "utilities";
+		String accounts = utilities + slash + "accounts";
+		String salt = utilities + slash + "salt";
 		
 		//make folders
 		File folderFile = new File(mainFolder);
